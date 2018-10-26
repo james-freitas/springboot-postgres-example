@@ -53,20 +53,35 @@ public class ProductController {
 	}
 	
 	@PutMapping("/{id}")
-	public ResponseEntity<Void> update(@Valid @RequestBody Product productRequest, 
+	public ResponseEntity<Void> update(@Valid @RequestBody Product productFrom, 
 									   @PathVariable Long id){
+
+		Product productTo = productRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Not found"));
+		
+		populateProductToChange(productFrom, productTo);
+		
+		productRepository.save(productTo);
+		return ResponseEntity.noContent().build();
+		
+	}
+
+	private void populateProductToChange(Product productFrom, Product productTo) {
+		productTo.setDescription(productFrom.getDescription());
+		productTo.setImageUrl(productFrom.getImageUrl());
+		productTo.setPrice(productFrom.getPrice());
+	}
+	
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Void> delete(@PathVariable Long id){
 
 		Product productFound = productRepository.findById(id)
 				.orElseThrow(() -> new RuntimeException("Not found"));
 		
-		productFound.setDescription(productRequest.getDescription());
-		productFound.setImageUrl(productRequest.getImageUrl());
-		productFound.setPrice(productRequest.getPrice());
-		
-		productRepository.save(productFound);
-		return ResponseEntity.noContent().build();
-		
+		productRepository.delete(productFound);
+		return ResponseEntity.noContent().build();		
 	}
+
 	
     // Bug on Eclipse in the map (https://bugs.eclipse.org/bugs/show_bug.cgi?id=512486)
 //	@PutMapping("/{id}")
@@ -79,15 +94,4 @@ public class ProductController {
 //                    return productRepository.save(question);
 //                }).orElseThrow(() -> new ResourceNotFoundException("Question not found with id " + questionId));
 //    }
-	
-	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> delete(@PathVariable Long id){
-
-		Product productFound = productRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Not found"));
-		
-		productRepository.delete(productFound);
-		return ResponseEntity.noContent().build();		
-	}
-	
 }
