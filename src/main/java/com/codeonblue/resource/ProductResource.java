@@ -1,4 +1,4 @@
-package com.codeonblue.controller;
+package com.codeonblue.resource;
 
 import java.net.URI;
 import java.util.List;
@@ -21,11 +21,11 @@ import com.codeonblue.repository.ProductRepository;
 
 @RestController
 @RequestMapping("/products")
-public class ProductController {
+public class ProductResource {
 
 	private final ProductRepository productRepository;
 	
-	public ProductController(ProductRepository productRepository) {
+	public ProductResource(ProductRepository productRepository) {
 		this.productRepository = productRepository;
 	}
 	
