@@ -1,6 +1,7 @@
 package com.codeonblue.resource;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -18,50 +19,50 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.codeonblue.domain.Product;
 import com.codeonblue.repository.ProductRepository;
+import com.codeonblue.service.ProductService;
 
 @RestController
 @RequestMapping("/products")
 public class ProductResource {
 
-	private final ProductRepository productRepository;
+	private final ProductService productService;	
+
 	
-	public ProductResource(ProductRepository productRepository) {
-		this.productRepository = productRepository;
+	public ProductResource(ProductService productService) {
+		this.productService = productService;
 	}
 	
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<Product> findById(@PathVariable Long id){
-		Product productFound = productRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Not found"));
+		Product productFound = productService.getById(id);
 		return ResponseEntity.ok().body(productFound);
 	}
 	
 	@GetMapping("")
 	public ResponseEntity<List<Product>> list(){
-		List<Product> productList = productRepository.findAll();
+		List<Product> productList = productService.listAll(); 
 		return ResponseEntity.ok().body(productList);		
 	}
 	
 	@PostMapping("")
 	public ResponseEntity<Void> insert(@Valid @RequestBody Product product){
-		Product productSaved = productRepository.save(product);
+		Product productSaved = productService.save(product);
 		URI uri = ServletUriComponentsBuilder
-			.fromCurrentRequest()
-			.path("/{id}")
-			.buildAndExpand(productSaved.getId()).toUri();
-		return ResponseEntity.created(uri).build();
+				.fromCurrentRequest()
+				.path("/{id}")
+				.buildAndExpand(productSaved.getId()).toUri();
+		return ResponseEntity.created(uri).build();			
 	}
 	
 	@PutMapping("/{id}")
 	public ResponseEntity<Void> update(@Valid @RequestBody Product productFrom, 
 									   @PathVariable Long id){
 
-		Product productTo = productRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Not found"));
+		Product productTo = productService.getById(id);
 		
 		populateProductToChange(productFrom, productTo);
 		
-		productRepository.save(productTo);
+		productService.save(productTo);
 		return ResponseEntity.noContent().build();
 		
 	}
@@ -74,11 +75,7 @@ public class ProductResource {
 	
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> delete(@PathVariable Long id){
-
-		Product productFound = productRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Not found"));
-		
-		productRepository.delete(productFound);
+		productService.delete(id);
 		return ResponseEntity.noContent().build();		
 	}
 

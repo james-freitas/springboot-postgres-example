@@ -2,21 +2,20 @@ package com.codeonblue.domain;
 
 import java.math.BigDecimal;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 
 @Entity
 public class Product {
-
+   
     @Id
-    @GeneratedValue(generator = "product_generator")
-    @SequenceGenerator(
-    		name = "product_generator",
-    		sequenceName = "product_sequence",
-    		initialValue = 1
-    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name="product_generator", sequenceName = "product_seq", allocationSize=50)
+    @Column(name = "id", updatable = false, nullable = false)
     private Long id;
     private String description;
     private BigDecimal price;

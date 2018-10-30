@@ -1,10 +1,25 @@
 package com.codeonblue.resource;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.isA;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,40 +32,37 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.codeonblue.domain.Product;
 import com.codeonblue.repository.ProductRepository;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.hasSize;
-
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.codeonblue.service.ProductService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(ProductResource.class)
 public class ProductResourceTest {
 	
-	private final Product product = createProduct();	
+	private final Product product = createProduct();
+	private final Product productToChange = createChangedProduct();
 	private final Optional<Product> optionalProduct = Optional.of(product);
+	
+	private final String API_PATH = "http://localhost/products";
 	
 	@Autowired
 	private MockMvc mockMvc;
 	
 	@MockBean
-	private ProductRepository productRepositoryMock;
+	private ProductService productServiceMock;
+	
+    @MockBean
+    private ProductRepository productRepository;
+	
+	@Autowired
+	private ObjectMapper objectMapper;
 	
 	@Test
 	public void testShouldGetAllCategories() throws Exception {
 		List<Product> productList = new ArrayList<Product>();
 		productList.add(product);
 						
-		given(productRepositoryMock.findAll()).willReturn(productList);
+		given(productServiceMock.listAll()).willReturn(productList);
 		
 		mockMvc.perform(get("/products")
 				.contentType(MediaType.APPLICATION_JSON))
@@ -61,14 +73,13 @@ public class ProductResourceTest {
 				.andExpect(jsonPath("$[0].imageUrl", is(productList.get(0).getImageUrl())))
 				.andExpect(jsonPath("$[0].price", is(productList.get(0).getPrice().doubleValue())));
 				
-		verify(productRepositoryMock, times(1)).findAll();
-		verifyNoMoreInteractions(productRepositoryMock);			
+		verify(productServiceMock, times(1)).listAll();
+		verifyNoMoreInteractions(productServiceMock);			
 	}
 	
-    @Test
+	@Test
     public void testShouldGetProductByIdSuccess() throws Exception {
-
-        given(productRepositoryMock.findById(1L)).willReturn(optionalProduct);
+        given(productServiceMock.getById(1L)).willReturn(product);
         Product productFound = optionalProduct.get();
 
         mockMvc.perform(get("/products/{id}", product.getId())
@@ -79,22 +90,20 @@ public class ProductResourceTest {
 				.andExpect(jsonPath("$.imageUrl", is(productFound.getImageUrl())))
 				.andExpect(jsonPath("$.price", is(productFound.getPrice().doubleValue())));
 
-        verify(productRepositoryMock, times(1)).findById(product.getId());
-        verifyNoMoreInteractions(productRepositoryMock);
+        verify(productServiceMock, times(1)).getById(product.getId());
+        verifyNoMoreInteractions(productServiceMock);
     }
     
     @Test
     public void testShouldDeleteProductByIdSuccess() throws Exception {
         Long idToDelete = product.getId();
-        doNothing().when(productRepositoryMock).delete(product);
-        given(productRepositoryMock.findById(idToDelete)).willReturn(optionalProduct);
+        doNothing().when(productServiceMock).delete(idToDelete);
 
         mockMvc.perform(delete("/products/{id}", idToDelete))
                 .andExpect(status().isNoContent());
 
-        verify(productRepositoryMock, times(1)).findById(idToDelete);
-        verify(productRepositoryMock, times(1)).delete(product);
-        verifyNoMoreInteractions(productRepositoryMock);
+        verify(productServiceMock, times(1)).delete(idToDelete);
+        verifyNoMoreInteractions(productServiceMock);
     }
 	
 	private Product createProduct() {	
@@ -106,4 +115,58 @@ public class ProductResourceTest {
 		return product;
 	}
 	
+    private Product createChangedProduct() {
+		Product product = new Product();
+		product.setId(1L);
+		product.setDescription("Product description - changed");
+		product.setImageUrl("Product image url - changed");
+		product.setPrice(new BigDecimal("15.90"));
+		return product;
+	}
+/*	
+    @Test
+    public void testShouldUpdateProductSuccess() throws Exception {
+        
+        when(productServiceMock.getById(product.getId())).thenReturn(product);
+        when(productServiceMock.save(productToChange)).thenReturn(productToChange);
+
+        mockMvc.perform(
+                put("/products/{id}", product.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+        				.content(objectMapper.writeValueAsString(productToChange)))
+                        .andExpect(status().isNoContent());
+
+        verify(productServiceMock, times(1)).getById(productToChange.getId());
+        verify(productServiceMock, times(1)).save(productToChange);
+        //verifyNoMoreInteractions(productRepositoryMock);
+    }
+  */  
+/*    @Test
+    public void testShouldCreateProductSuccess() throws Exception {
+		Product productToInsert = new Product();
+		productToInsert.setDescription("Product description");
+		productToInsert.setImageUrl("Product image url");
+		productToInsert.setPrice(new BigDecimal("10.0"));
+		
+		Product productInserted = new Product();
+		productInserted.setId(1L);
+		productInserted.setDescription("Product description");
+		productInserted.setImageUrl("Product image url");
+		productInserted.setPrice(new BigDecimal("10.0"));
+    	    	
+		//when(productRepositoryMock.save(isA(Product.class))).thenReturn(product);
+        when(productRepositoryMock.save(productToInsert)).thenReturn(productInserted);
+
+        mockMvc.perform(
+                post("/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(productToInsert)))
+                .andExpect(status().isOk());
+                //.andExpect(header().string("location", containsString(API_PATH + "/1")));
+
+        //verify(productRepositoryMock, times(1)).save(product);
+        verifyNoMoreInteractions(productRepositoryMock);
+    }*/
+	
+
 }
