@@ -4,12 +4,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.codeonblue</groupId>
-	<artifactId>demo</artifactId>
+	<artifactId>springboot-postgres</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>springboot-postgres</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Springboot and Postgres REST example</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -63,6 +63,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-
 </project>

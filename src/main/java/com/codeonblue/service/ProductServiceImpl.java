@@ -1,6 +1,5 @@
 package com.codeonblue.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +31,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product save(Product product) {
-        productRepository.save(product);
-        return product;
+        Product productSaved = productRepository.save(product);
+        return productSaved;
     }
 
     @Override

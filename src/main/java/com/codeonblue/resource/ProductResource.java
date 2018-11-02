@@ -1,11 +1,10 @@
 package com.codeonblue.resource;
 
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.Valid;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,10 +14,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.codeonblue.domain.Product;
-import com.codeonblue.repository.ProductRepository;
 import com.codeonblue.service.ProductService;
 
 @RestController
@@ -45,13 +42,9 @@ public class ProductResource {
 	}
 	
 	@PostMapping("")
-	public ResponseEntity<Void> insert(@Valid @RequestBody Product product){
+	public ResponseEntity<Product> insert(@Valid @RequestBody Product product){
 		Product productSaved = productService.save(product);
-		URI uri = ServletUriComponentsBuilder
-				.fromCurrentRequest()
-				.path("/{id}")
-				.buildAndExpand(productSaved.getId()).toUri();
-		return ResponseEntity.created(uri).build();			
+		return new ResponseEntity<Product>(productSaved, HttpStatus.CREATED);
 	}
 	
 	@PutMapping("/{id}")

@@ -1,7 +1,6 @@
 package com.codeonblue.resource;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
@@ -32,7 +31,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.codeonblue.domain.Product;
 import com.codeonblue.repository.ProductRepository;
-import com.codeonblue.service.ProductService;
+import com.codeonblue.service.ProductServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(SpringRunner.class)
@@ -43,16 +42,14 @@ public class ProductResourceTest {
 	private final Product productToChange = createChangedProduct();
 	private final Optional<Product> optionalProduct = Optional.of(product);
 	
-	private final String API_PATH = "http://localhost/products";
-	
 	@Autowired
 	private MockMvc mockMvc;
 	
 	@MockBean
-	private ProductService productServiceMock;
+	private ProductServiceImpl productServiceMock;
 	
     @MockBean
-    private ProductRepository productRepository;
+    private ProductRepository productRepositoryMock;
 	
 	@Autowired
 	private ObjectMapper objectMapper;
@@ -123,7 +120,7 @@ public class ProductResourceTest {
 		product.setPrice(new BigDecimal("15.90"));
 		return product;
 	}
-/*	
+	
     @Test
     public void testShouldUpdateProductSuccess() throws Exception {
         
@@ -137,11 +134,9 @@ public class ProductResourceTest {
                         .andExpect(status().isNoContent());
 
         verify(productServiceMock, times(1)).getById(productToChange.getId());
-        verify(productServiceMock, times(1)).save(productToChange);
-        //verifyNoMoreInteractions(productRepositoryMock);
     }
-  */  
-/*    @Test
+    
+    @Test
     public void testShouldCreateProductSuccess() throws Exception {
 		Product productToInsert = new Product();
 		productToInsert.setDescription("Product description");
@@ -154,19 +149,12 @@ public class ProductResourceTest {
 		productInserted.setImageUrl("Product image url");
 		productInserted.setPrice(new BigDecimal("10.0"));
     	    	
-		//when(productRepositoryMock.save(isA(Product.class))).thenReturn(product);
-        when(productRepositoryMock.save(productToInsert)).thenReturn(productInserted);
+        when(productServiceMock.save(productToInsert)).thenReturn(productInserted);
 
-        mockMvc.perform(
-                post("/products")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(productToInsert)))
-                .andExpect(status().isOk());
-                //.andExpect(header().string("location", containsString(API_PATH + "/1")));
-
-        //verify(productRepositoryMock, times(1)).save(product);
-        verifyNoMoreInteractions(productRepositoryMock);
-    }*/
-	
-
+        mockMvc.perform(post("/products")
+                        .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                        .content(objectMapper.writeValueAsBytes(productToInsert))
+        )
+                .andExpect(status().isCreated());
+    }
 }
