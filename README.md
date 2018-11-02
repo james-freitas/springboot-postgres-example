@@ -1,9 +1,16 @@
-## Springboot and Postgres example
+# Springboot and PostgreSQL REST example
 
-### Change the following configurations on application.properties
+This springboot web application exposes an API Rest using PostgreSQL
 
+## PostgreSQL
+
+Install PostgreSQL, connect to it and create the database 
+
+```shell
+psql -U <password>
+
+CREATE DATABASE postgresdb;
 ```
-spring.datasource.url
-spring.datasource.username
-spring.datasource.password
-```
+## Set up
+
+Or change application.properties file according to your needs 
