@@ -21,7 +21,16 @@ public class Product {
     private BigDecimal price;
     private String imageUrl;
 
-    public Long getId() {
+    public Product() {}
+    
+    public Product(Long id, String description, BigDecimal price, String imageUrl) {
+		this.id = id;
+		this.description = description;
+		this.price = price;
+		this.imageUrl = imageUrl;
+	}
+
+	public Long getId() {
         return id;
     }
 
